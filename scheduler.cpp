@@ -135,12 +135,26 @@ static void prvCreateAllTasks( void );
 	static BaseType_t prvFindEmptyElementIndexTCB( void )
 	{
 		/* your implementation goes here */
+		UBaseType_t uxIndex;
+		for( uxIndex = 0; uxIndex < schedMAX_NUMBER_OF_PERIODIC_TASKS; uxIndex++)
+		{
+			if(xTCBArray[ uxIndex ].xInUse == pdFALSE)
+			{
+				return uxIndex;
+			}
+		}
+		return -1;
 	}
 
 	/* Remove a pointer to extended TCB from xTCBArray. */
 	static void prvDeleteTCBFromArray( BaseType_t xIndex )
 	{
 		/* your implementation goes here */
+		if(xTCBArray[xIndex].xInUse == pdTRUE)
+		{
+			xTCBArray[ xIndex ].xInUse = pdFALSE;
+			xTaskCounter--;
+		}
 	}
 	
 #endif /* schedUSE_TCB_ARRAY */
@@ -155,9 +169,12 @@ static void prvPeriodicTaskCode( void *pvParameters )
 	TaskHandle_t xCurrentTaskHandle = xTaskGetCurrentTaskHandle();  
 	
     /* your implementation goes here */
-    
+    if(xCurrentTaskHandle == NULL)
+	{
+		return;
+	}
     /* Check the handle is not NULL. */
-	
+	pxThisTask = &xTCBArray[prvGetTCBIndexFromHandle(xCurrentTaskHandle)];
     /* If required, use the handle to obtain further information about the task. */
     /* You may find the following code helpful...
 	BaseType_t xIndex;
@@ -166,6 +183,10 @@ static void prvPeriodicTaskCode( void *pvParameters )
 		
 	}		
     */
+   if( pxThisTask->xReleaseTime != 0 )
+	{
+		xTaskDelayUntil( &pxThisTask->xLastWakeTime, pxThisTask->xReleaseTime );
+	}
     
 	#if( schedUSE_TIMING_ERROR_DETECTION_DEADLINE == 1 )
         /* your implementation goes here */
@@ -183,7 +204,7 @@ static void prvPeriodicTaskCode( void *pvParameters )
 				
 		pxThisTask->xExecTime = 0;   
         
-		xTaskDelayUntil( );
+		xTaskDelayUntil( &pxThisTask->xLastWakeTime, pxThisTask->xPeriod );
 	}
 }
 
@@ -214,6 +235,11 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
 	
     /* Populate the rest */
     /* your implementation goes here */
+	pxNewTCB->xRelativeDeadline = xDeadlineTick;
+	pxNewTCB->xMaxExecTime = xMaxExecTimeTick;
+	pxNewTCB->xWorkIsDone = pdTRUE;
+	pxNewTCB->xExecTime = 0;
+
     
 	#if( schedUSE_TCB_ARRAY == 1 )
 		pxNewTCB->xInUse = pdTRUE;
@@ -222,11 +248,13 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
 	#if( schedSCHEDULING_POLICY == schedSCHEDULING_POLICY_RMS )
 		/* member initialization */
         /* your implementation goes here */
+		pxNewTCB->xPriorityIsSet = pdFALSE;
 	#endif /* schedSCHEDULING_POLICY */
 	
 	#if( schedUSE_TIMING_ERROR_DETECTION_DEADLINE == 1 )
 		/* member initialization */
         /* your implementation goes here */
+		pxNewTCB->xExecutedOnce = pdFALSE;
 	#endif /* schedUSE_TIMING_ERROR_DETECTION_DEADLINE */
 	
 	#if( schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME == 1 )
@@ -245,6 +273,10 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
 void vSchedulerPeriodicTaskDelete( TaskHandle_t xTaskHandle )
 {
 	/* your implementation goes here */
+	if(xTaskHandle != NULL)
+	{
+		prvDeleteTCBFromArray( prvGetTCBIndexFromHandle( xTaskHandle ) );
+	}
 	
 	vTaskDelete( xTaskHandle );
 }
@@ -261,7 +293,7 @@ static void prvCreateAllTasks( void )
 			configASSERT( pdTRUE == xTCBArray[ xIndex ].xInUse );
 			pxTCB = &xTCBArray[ xIndex ];
 
-			BaseType_t xReturnValue = xTaskCreate( /* your implementation goes here */);
+			BaseType_t xReturnValue = xTaskCreate( prvPeriodicTaskCode, pxTCB->pcName, pxTCB->uxStackDepth, pxTCB->pvParameters, pxTCB->uxPriority, pxTCB->pxTaskHandle );
 					
 		}	
 	#endif /* schedUSE_TCB_ARRAY */
@@ -289,14 +321,31 @@ static void prvSetFixedPriorities( void )
 		for( xIndex = 0; xIndex < xTaskCounter; xIndex++ )
 		{
 			/* your implementation goes here */
+			pxTCB = &xTCBArray[ xIndex ];
+			if(pxTCB->xPriorityIsSet == pdTRUE)
+			{
+				continue;
+			}
 			#if( schedSCHEDULING_POLICY == schedSCHEDULING_POLICY_RMS )
 				/* your implementation goes here */
+				if( pxTCB->xPeriod <= xShortest )
+				{
+					xShortest = pxTCB->xPeriod;
+					pxShortestTaskPointer = pxTCB;
+				}
 			#endif /* schedSCHEDULING_POLICY */
 		}
 		
 		/* set highest priority to task with xShortest period (the highest priority is configMAX_PRIORITIES-1) */		
 		
 		/* your implementation goes here */
+		if( xPreviousShortest != xShortest )
+		{
+			xHighestPriority--;
+		}
+		pxShortestTaskPointer->uxPriority = xHighestPriority;
+		pxShortestTaskPointer->xPriorityIsSet = pdTRUE;
+		xPreviousShortest = xShortest;
 	}
 }
 #endif /* schedSCHEDULING_POLICY */
@@ -307,11 +356,17 @@ static void prvSetFixedPriorities( void )
 	/* Recreates a deleted task that still has its information left in the task array (or list). */
 	static void prvPeriodicTaskRecreate( SchedTCB_t *pxTCB )
 	{
-		BaseType_t xReturnValue = xTaskCreate( /* your implementation goes here */);
+		BaseType_t xReturnValue = xTaskCreate(prvPeriodicTaskCode, pxTCB->pcName, pxTCB->uxStackDepth, pxTCB->pvParameters, pxTCB->uxPriority, pxTCB->pxTaskHandle );
 				                      		
 		if( pdPASS == xReturnValue )
 		{
-			/* your implementation goes here */			
+			/* your implementation goes here */		
+			pxTCB->xExecutedOnce = pdFALSE;
+			#if( schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME == 1 )
+				pxTCB->xSuspended = pdFALSE;
+				pxTCB->xMaxExecTimeExceeded = pdFALSE;
+			#endif /* schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME */
+				
 		}
 		else
 		{
@@ -325,12 +380,13 @@ static void prvSetFixedPriorities( void )
 	static void prvDeadlineMissedHook( SchedTCB_t *pxTCB, TickType_t xTickCount )
 	{
 		/* Delete the pxTask and recreate it. */
-		vTaskDelete( /* your implementation goes here */ );
+		vTaskDelete( *pxTCB->pxTaskHandle );
 		pxTCB->xExecTime = 0;
 		prvPeriodicTaskRecreate( pxTCB );	
 		
 		/* Need to reset next WakeTime for correct release. */
 		/* your implementation goes here */
+		
 		
 	}
 
