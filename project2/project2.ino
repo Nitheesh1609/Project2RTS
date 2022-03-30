@@ -13,6 +13,7 @@ static void testFunc1( void *pvParameters )
 {
 	(void) pvParameters;
 	int i,a;
+   Serial.println("Executing Task 1");  
 	for( i = 0; i < 10000; i++ )
 	{
 		a = 1 + i*i*i*i;
@@ -22,7 +23,8 @@ static void testFunc1( void *pvParameters )
 static void testFunc2( void *pvParameters )
 { 
 	(void) pvParameters;	
-	int i, a;	
+	int i, a;
+ Serial.println("Executing Task 2");	
 	for(i = 0; i < 10000; i++ )
 	{
 		a = 1 + a * a * i;

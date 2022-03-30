@@ -266,7 +266,7 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
 		xTaskCounter++;	
 	#endif /* schedUSE_TCB_SORTED_LIST */
 	taskEXIT_CRITICAL();
-  Serial.println(pxNewTCB->xMaxExecTime);
+  Serial.println( pxNewTCB->pcName);
 }
 
 /* Deletes a periodic task. */
