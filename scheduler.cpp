@@ -386,7 +386,9 @@ static void prvSetFixedPriorities( void )
 		
 		/* Need to reset next WakeTime for correct release. */
 		/* your implementation goes here */
-		
+		pxTCB->xReleaseTime = pxTCB->xLastWakeTime + pxTCB->xPeriod;
+		pxTCB->xLastWakeTime = 0;
+		pxTCB->xAbsoluteDeadline = pxTCB->xRelativeDeadline + pxTCB->xReleaseTime;
 		
 	}
 
@@ -395,8 +397,14 @@ static void prvSetFixedPriorities( void )
 	{ 
 		/* check whether deadline is missed. */     		
 		/* your implementation goes here */
-		prvDeadlineMissedHook( pxTCB, xTickCount );
-			
+		if(pxTCB != NULL && pxTCB->WorkIsDone == pdFALSE && pxTCB->xExectuedOnce == pdTRUE)
+		{
+			if( ( signed ) ( pxTCB->xLastWakeTime + pxTCB->xRelativeDeadline - xTickCount ) < 0 )
+			{
+				prvDeadlineMissedHook( pxTCB, xTickCount );
+			}
+
+		}			
 	}	
 #endif /* schedUSE_TIMING_ERROR_DETECTION_DEADLINE */
 
@@ -427,11 +435,18 @@ static void prvSetFixedPriorities( void )
 	static void prvSchedulerCheckTimingError( TickType_t xTickCount, SchedTCB_t *pxTCB )
 	{
 		/* your implementation goes here */
-    
+		if(pxTCB->xInUSe == pdFALSE)
+		{
+			return;
+		}
 
 		#if( schedUSE_TIMING_ERROR_DETECTION_DEADLINE == 1 )						
 			/* check if task missed deadline */
             /* your implementation goes here */
+			if( ( signed ) ( xTickCount - pxTCB->xLastWakeTime ) > 0 )
+			{
+				pxTCB->xWorkIsDone = pdFALSE;
+			}
         
 			prvCheckDeadline( pxTCB, xTickCount );						
 		#endif /* schedUSE_TIMING_ERROR_DETECTION_DEADLINE */
@@ -472,6 +487,12 @@ static void prvSetFixedPriorities( void )
 				/* You may find the following helpful...
                     prvSchedulerCheckTimingError( xTickCount, pxTCB );
                  */
+				UBaseType_t uxIndex;
+				for( uxIndex = 0; uxIndex < schedMAX_NUMBER_OF_PERIODIC_TASKS; uxIndex++)
+				{
+					pxTCB = &xTCBArray[ uxIndex ];
+					prvSchedulerCheckTimingError( xTickCount, pxTCB );
+				}
 			
 			#endif /* schedUSE_TIMING_ERROR_DETECTION_DEADLINE || schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME */
 
