@@ -31,6 +31,7 @@ static void testFunc2( void *pvParameters )
 
 int main( void )
 {
+  Serial.begin(9600);
 	char c1 = 'a';
 	char c2 = 'b';			
 
@@ -48,4 +49,3 @@ int main( void )
 	
 	for( ;; );
 }
-

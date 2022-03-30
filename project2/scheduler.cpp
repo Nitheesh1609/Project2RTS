@@ -266,7 +266,7 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
 		xTaskCounter++;	
 	#endif /* schedUSE_TCB_SORTED_LIST */
 	taskEXIT_CRITICAL();
-  //Serial.println(pxNewTCB->xMaxExecTime);
+  Serial.println(pxNewTCB->xMaxExecTime);
 }
 
 /* Deletes a periodic task. */
@@ -397,7 +397,7 @@ static void prvSetFixedPriorities( void )
 	{ 
 		/* check whether deadline is missed. */     		
 		/* your implementation goes here */
-		if(pxTCB != NULL && pxTCB->WorkIsDone == pdFALSE && pxTCB->xExectuedOnce == pdTRUE)
+		if(pxTCB != NULL && pxTCB->xWorkIsDone == pdFALSE && pxTCB->xExecutedOnce == pdTRUE)
 		{
 			if( ( signed ) ( pxTCB->xLastWakeTime + pxTCB->xRelativeDeadline - xTickCount ) < 0 )
 			{
@@ -435,7 +435,7 @@ static void prvSetFixedPriorities( void )
 	static void prvSchedulerCheckTimingError( TickType_t xTickCount, SchedTCB_t *pxTCB )
 	{
 		/* your implementation goes here */
-		if(pxTCB->xInUSe == pdFALSE)
+		if(pxTCB->xInUse == pdFALSE)
 		{
 			return;
 		}
