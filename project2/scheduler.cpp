@@ -190,6 +190,7 @@ static void prvPeriodicTaskCode( void *pvParameters )
     
 	#if( schedUSE_TIMING_ERROR_DETECTION_DEADLINE == 1 )
         /* your implementation goes here */
+        pxThisTask->xExecutedOnce = pdTRUE;
 	#endif /* schedUSE_TIMING_ERROR_DETECTION_DEADLINE */
     
 	if( 0 == pxThisTask->xReleaseTime )
@@ -237,7 +238,7 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
     /* your implementation goes here */
 	pxNewTCB->xRelativeDeadline = xDeadlineTick;
 	pxNewTCB->xMaxExecTime = xMaxExecTimeTick;
-	pxNewTCB->xWorkIsDone = pdTRUE;
+	pxNewTCB->xWorkIsDone = pdFALSE;
 	pxNewTCB->xExecTime = 0;
 
     
@@ -266,7 +267,9 @@ void vSchedulerPeriodicTaskCreate( TaskFunction_t pvTaskCode, const char *pcName
 		xTaskCounter++;	
 	#endif /* schedUSE_TCB_SORTED_LIST */
 	taskEXIT_CRITICAL();
-  Serial.println( pxNewTCB->pcName);
+  	Serial.print(pxTCB->pcName);
+	Serial.print('\t');
+	Serial.print("is created.");
 }
 
 /* Deletes a periodic task. */
@@ -360,6 +363,9 @@ static void prvSetFixedPriorities( void )
 				                      		
 		if( pdPASS == xReturnValue )
 		{
+			Serial.print(pxTCB->pcName);
+			Serial.print('\t');
+			Serial.print("is recreated.");
 			/* your implementation goes here */		
 			pxTCB->xExecutedOnce = pdFALSE;
 			#if( schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME == 1 )
@@ -401,6 +407,9 @@ static void prvSetFixedPriorities( void )
 		{
 			if( ( signed ) ( pxTCB->xLastWakeTime + pxTCB->xRelativeDeadline - xTickCount ) < 0 )
 			{
+				Serial.print(pxTCB->pcName);
+				Serial.print('\t');
+				Serial.print("has missed its deadline.");
 				prvDeadlineMissedHook( pxTCB, xTickCount );
 			}
 
