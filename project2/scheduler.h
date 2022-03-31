@@ -28,9 +28,10 @@ extern "C" {
 
 /* The scheduling policy can be chosen from one of these. */
 #define schedSCHEDULING_POLICY_RMS 1 		/* Rate-monotonic scheduling */
+#define schedSCHEDULING_POLICY_DMS 2
 
 /* Configure scheduling policy by setting this define to the appropriate one. */
-#define schedSCHEDULING_POLICY schedSCHEDULING_POLICY_RMS //schedSCHEDULING_POLICY_EDF
+#define schedSCHEDULING_POLICY schedSCHEDULING_POLICY_DMS //schedSCHEDULING_POLICY_EDF
 
 /* Maximum number of periodic tasks that can be created. (Scheduler task is
  * not included) */
@@ -59,7 +60,7 @@ extern "C" {
 	/* Stack size of the scheduler task. */
 	#define schedSCHEDULER_TASK_STACK_SIZE 200 
 	/* The period of the scheduler task in software ticks. */
-	#define schedSCHEDULER_TASK_PERIOD pdMS_TO_TICKS( 100 )	
+	#define schedSCHEDULER_TASK_PERIOD pdMS_TO_TICKS( 50 )	
 #endif /* schedUSE_SCHEDULER_TASK */
 
 /* This function must be called before any other function call from scheduler.h. */
