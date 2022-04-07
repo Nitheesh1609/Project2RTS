@@ -2,6 +2,8 @@
 
 #define schedUSE_TCB_ARRAY 1
 
+
+
 /* Extended Task control block for managing periodic tasks within this library. */
 typedef struct xExtended_TCB
 {
@@ -200,7 +202,7 @@ static void prvPeriodicTaskCode( void *pvParameters )
 		pxThisTask->xWorkIsDone = pdFALSE;
 		pxThisTask->pvTaskCode( pvParameters );
 		pxThisTask->xWorkIsDone = pdTRUE;  
-		pxThisTask->xExecTime = 0;
+		pxThisTask->xExecTime = 0 ;
 		xTaskDelayUntil(&pxThisTask->xLastWakeTime, pxThisTask->xPeriod);
 		
 	}
@@ -400,7 +402,7 @@ static void prvSetFixedPriorities( void )
 	 * The periodic task is released during next period. */
 	static void prvDeadlineMissedHook( SchedTCB_t *pxTCB, TickType_t xTickCount )
 	{
-		/* Delete the pxTask and recreate it. */
+		/* Delete the pxTask and recreate it. */ 
 		Serial.print(pxTCB->pcName);
 		Serial.print(" has missed deadline. ");
 		vTaskDelete( *pxTCB->pxTaskHandle);
@@ -422,6 +424,7 @@ static void prvSetFixedPriorities( void )
 		if( (pxTCB != NULL) && (pxTCB->xWorkIsDone == pdFALSE) && (pxTCB->xExecutedOnce == pdTRUE))
 		{
 			pxTCB->xAbsoluteDeadline = pxTCB->xLastWakeTime + pxTCB->xRelativeDeadline;
+		
 			if( ( signed ) ( pxTCB->xAbsoluteDeadline - xTickCount ) < 0 )
 			{
 				
