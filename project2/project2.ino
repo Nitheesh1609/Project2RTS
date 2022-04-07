@@ -14,7 +14,7 @@ static void testFunc1( void *pvParameters )
   (void) pvParameters;
   int i,a;
   Serial.println("Task 1 is executing");
-  delay(100);
+  delay(70);
   Serial.println("Task 1 is completed");
  
 }
@@ -24,7 +24,7 @@ static void testFunc2( void *pvParameters )
   (void) pvParameters;  
   int i, a; 
   Serial.println("Task 2 is executing");  
-  delay(200);
+  delay(180);
   Serial.println("Task 2 is completed");
 
 }
@@ -34,7 +34,7 @@ static void testFunc3( void *pvParameters )
   (void) pvParameters;  
   int i, a; 
   Serial.println("Task 3 is executing");  
-  delay(150);
+  delay(140);
   Serial.println("Task 3 is completed");
  
 }
@@ -44,7 +44,7 @@ static void testFunc4( void *pvParameters )
   (void) pvParameters;  
   int i, a; 
   Serial.println("Task 4 is executing");
-  delay(300);
+  delay(280);
   
   Serial.println("Task 4 is completed");
  
