@@ -30,6 +30,8 @@ extern "C" {
 #define schedSCHEDULING_POLICY_RMS 1 		/* Rate-monotonic scheduling */
 #define schedSCHEDULING_POLICY_DMS 2
 
+#define schedOverhead 1
+
 /* Configure scheduling policy by setting this define to the appropriate one. */
 #define schedSCHEDULING_POLICY schedSCHEDULING_POLICY_DMS //schedSCHEDULING_POLICY_EDF
 

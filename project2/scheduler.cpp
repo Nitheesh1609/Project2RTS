@@ -2,8 +2,12 @@
 
 #define schedUSE_TCB_ARRAY 1
 
-TaskHandle_t xLastTask = NULL;
+#if(schedOverhead == 1)
+	TaskHandle_t xLastTask = NULL;
 static TickType_t SchedTimer = 0;
+#endif 
+
+
 
 
 /* Extended Task control block for managing periodic tasks within this library. */
@@ -201,7 +205,8 @@ static void prvPeriodicTaskCode( void *pvParameters )
 	for( ; ; )
 	{	
 		/* Execute the task function specified by the user. */
-		if(xLastTask == xSchedulerHandle) {	
+		#if(schedOverhead == 1)
+			if(xLastTask == xSchedulerHandle) {	
 			TickType_t EndSched = xTaskGetTickCount();
 			SchedTimer = EndSched - SchedTimer;
 			//Serial.print("Schduler Taken Time: ");
@@ -210,13 +215,20 @@ static void prvPeriodicTaskCode( void *pvParameters )
 			if(SchedTimer == 0){
 				SchedTimer = 1;
 			}	
-		}
+			}
+		#endif 
+		
 		pxThisTask->xWorkIsDone = pdFALSE;
 		pxThisTask->pvTaskCode( pvParameters );
 		pxThisTask->xWorkIsDone = pdTRUE;  
 		pxThisTask->xExecTime = 0 ;
-		xLastTask = xCurrentTaskHandle; 
-		pxThisTask->xAbsoluteDeadline = pxThisTask->xLastWakeTime + pxThisTask->xRelativeDeadline + pxThisTask->xPeriod + SchedTimer;       
+		#if(schedOverhead == 1) 
+			xLastTask = xCurrentTaskHandle;
+			pxThisTask->xAbsoluteDeadline = pxThisTask->xLastWakeTime + pxThisTask->xRelativeDeadline + pxThisTask->xPeriod + SchedTimer;       
+		#else
+			pxThisTask->xAbsoluteDeadline = pxThisTask->xLastWakeTime + pxThisTask->xRelativeDeadline + pxThisTask->xPeriod;
+		#endif
+
 		xTaskDelayUntil(&pxThisTask->xLastWakeTime, pxThisTask->xPeriod);
 		
 	}
@@ -528,7 +540,9 @@ static void prvSetFixedPriorities( void )
 		for( ; ; )
 		{ 
 			//Serial.println("Scheduler task!!");
-			SchedTimer = xTaskGetTickCount();
+			#if(schedOverhead == 1)
+				SchedTimer = xTaskGetTickCount();
+			#endif
 
 			
      		#if( schedUSE_TIMING_ERROR_DETECTION_DEADLINE == 1 || schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME == 1 )
@@ -548,7 +562,9 @@ static void prvSetFixedPriorities( void )
 
 		#endif /* schedUSE_TIMING_ERROR_DETECTION_DEADLINE || schedUSE_TIMING_ERROR_DETECTION_EXECUTION_TIME */
 
-			xLastTask = xSchedulerHandle;
+			#if(schedOverhead == 1)
+				xLastTask = xSchedulerHandle;
+			#endif
 			ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
 		}
 	}

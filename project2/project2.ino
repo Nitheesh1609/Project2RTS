@@ -14,7 +14,7 @@ static void testFunc1( void *pvParameters )
   (void) pvParameters;
   int i,a;
   Serial.println("Task 1 is executing");
-  delay(70);
+  delay(90);
   Serial.println("Task 1 is completed");
  
 }
@@ -24,7 +24,7 @@ static void testFunc2( void *pvParameters )
   (void) pvParameters;  
   int i, a; 
   Serial.println("Task 2 is executing");  
-  delay(180);
+  delay(190);
   Serial.println("Task 2 is completed");
 
 }
@@ -44,7 +44,7 @@ static void testFunc4( void *pvParameters )
   (void) pvParameters;  
   int i, a; 
   Serial.println("Task 4 is executing");
-  delay(280);
+  delay(300);
   
   Serial.println("Task 4 is completed");
  
@@ -76,7 +76,7 @@ int main( void )
 //  vSchedulerPeriodicTaskCreate(testFunc2, "t2", configMINIMAL_STACK_SIZE, &c2, NULL, &xHandle2, pdMS_TO_TICKS(0), pdMS_TO_TICKS(500), pdMS_TO_TICKS(150), pdMS_TO_TICKS(200));
 //  vSchedulerPeriodicTaskCreate(testFunc3, "t3", configMINIMAL_STACK_SIZE, &c3, NULL, &xHandle3, pdMS_TO_TICKS(0), pdMS_TO_TICKS(800), pdMS_TO_TICKS(200), pdMS_TO_TICKS(700));
 //  vSchedulerPeriodicTaskCreate(testFunc4, "t4", configMINIMAL_STACK_SIZE, &c4, NULL, &xHandle4, pdMS_TO_TICKS(0), pdMS_TO_TICKS(1000), pdMS_TO_TICKS(150), pdMS_TO_TICKS(1000));
-//
+
 
   vSchedulerStart();
 
