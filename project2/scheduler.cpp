@@ -378,7 +378,7 @@ static void prvSetFixedPriorities( void )
 				/* your implementation goes here */
 				if( pxTCB->xRelativeDeadline <= xShortest )
 				{
-					xShortest = pxTCB->xPeriod;
+					xShortest = pxTCB->xRelativeDeadline;
 					pxShortestTaskPointer = pxTCB;
 				}
 			#endif /* schedSCHEDULING_POLICY */
